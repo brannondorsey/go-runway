@@ -21,7 +21,7 @@ func doRequestWithRetry(responseCodesToRetry []int, request *http.Request) (*htt
 	for {
 		response, err := client.Do(request)
 		if err != nil {
-			return nil, NetworkError
+			return nil, ErrNetworkError
 		}
 		if !intSliceIncludes(responseCodesToRetry, response.StatusCode) {
 			return response, nil

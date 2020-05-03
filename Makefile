@@ -1,12 +1,12 @@
-.PHONY: default build run clean install
+.PHONY: default build run clean install docs
 
 default: build
 
 build:
-	go build -o build/bin/hosted-model examples/hosted-model/main.go
+	go build -o build/bin/text-generation examples/text-generation/main.go
 
 run:
-	go run examples/hosted-model/main.go
+	go run examples/text-generation/main.go
 
 clean:
 	go clean
@@ -14,4 +14,4 @@ clean:
 	touch build/bin/.gitkeep
 
 install: build
-	cp ./build/bin/hosted-model /usr/local/bin/hosted-model
+	cp ./build/bin/text-generation /usr/local/bin/text-generation
