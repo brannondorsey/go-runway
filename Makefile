@@ -3,10 +3,10 @@
 default: build
 
 build:
-	go build -o build/bin/hosted-model cmd/hosted-model/main.go
+	go build -o build/bin/hosted-model examples/hosted-model/main.go
 
 run:
-	go run cmd/hosted-model/main.go
+	go run examples/hosted-model/main.go
 
 clean:
 	go clean
