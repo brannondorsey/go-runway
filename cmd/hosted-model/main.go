@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	runway "github.com/brannondorsey/go-runway"
 )
@@ -55,4 +56,8 @@ func main() {
 	} else {
 		fmt.Printf("Received response from model: %+v\n", output["generated_text"])
 	}
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }

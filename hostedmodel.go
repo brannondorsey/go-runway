@@ -17,6 +17,9 @@ type HostedModel struct {
 }
 
 func NewHostedModel(url, token string) (*HostedModel, error) {
+	if !isValidHostedModelsV1URL(url) {
+		return nil, InvlaidURLError
+	}
 	return &HostedModel{
 		url:   url,
 		token: token,
@@ -35,7 +38,7 @@ func (model *HostedModel) IsAwake() (bool, error) {
 	var meta JSONObject
 	meta, err := model.root()
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 	status, ok := meta["status"]
 	if !ok {
@@ -86,19 +89,26 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 		return nil, *NewInvalidArgumentError("")
 	}
 
-	client := http.Client{}
 	model.addRequestHeaders(request)
-
-	response, err := client.Do(request)
+	response, err := doRequestWithRetry([]int{425, 502}, request)
 	if err != nil {
-		fmt.Println("Received an error during request")
-		fmt.Println(err)
-		return nil, NetworkError
+		return nil, err
 	}
 	defer response.Body.Close()
+
+	if isHostedModelResponseError(response) {
+		if response.StatusCode == 401 {
+			return nil, PermissionDeniedError
+		} else if response.StatusCode == 404 {
+			return nil, NotFoundError
+		} else if response.StatusCode == 500 {
+			return nil, ModelError
+		}
+		return nil, UnexpectedError
+	}
+
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println(err)
 		return nil, UnexpectedError
 	}
 
