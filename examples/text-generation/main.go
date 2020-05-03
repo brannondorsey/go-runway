@@ -1,3 +1,17 @@
+// This example shows how to use every public method of the HostedModels object
+// using a text-generation model (GPT-2). You should create a Hosted Model on RunwayML
+// before running this example. You can train your own text-generation model or use
+// one of the ones publicly available on the platform.
+// See https://learn.runwayml.com/#/how-to/hosted-models for details.
+//
+// Usage ./build/bin/text-generation
+//   -prompt string
+//     	An optional prompt to use when querying the model. (default "Four score and seven years ago")
+//   -token string
+//     	The hosted model token. Required if model is private.
+//   -url string
+//     	A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)
+
 package main
 
 import (
@@ -25,38 +39,41 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("[INFO] Model is awake")
 
-	// You can also check if the model is awake via the model.IsAwake() method
-	if awake, err := model.IsAwake(); !awake || err != nil {
-		if err != nil {
-			panic(err)
-		} else {
-			panic("Error: WaitUntilAwake() reported the model was awake, but IsAwake() said it wasn't")
-		}
+	// You can also check if the model is awake via the model.IsAwake() method. This is
+	// unnecessary when combined with WaitUntilAwake() above and used here simply for
+	// demonstration.
+	awake, err := model.IsAwake()
+	if err != nil {
+		panic(err)
+	}
+	if awake {
+		fmt.Println("[INFO] Model is awake")
 	}
 
-	// Info
+	fmt.Println("[INFO] Calling Model.Info()...")
 	info, err := model.Info()
 	if err != nil {
 		panic(err)
 	} else {
-		pretty, _ := json.Marshal(info)
-		fmt.Printf("[INFO] Received response from model.info(): ", string(pretty))
+		pretty, _ := json.MarshalIndent(info, "", "    ")
+		fmt.Printf("[INFO] Received response from model.info(): \n%v\n\n", string(pretty))
 	}
 
 	// Query
 	input := runway.JSONObject{
 		"prompt":         args.Prompt,
 		"seed":           rand.Intn(1000),
-		"max_characters": 1000,
+		"max_characters": 512,
 	}
 
+	fmt.Println("[INFO] Calling Model.Query()...")
 	output, err := model.Query(input)
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Printf("[INFO] Received response from model.query(): %+v\n", output["generated_text"])
+		pretty, _ := json.MarshalIndent(output, "", "    ")
+		fmt.Printf("[INFO] Received response from model.query():\n%v\n\n", string(pretty))
 	}
 }
 
