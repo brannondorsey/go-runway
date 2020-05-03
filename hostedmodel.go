@@ -45,7 +45,7 @@ func (model *HostedModel) IsAwake() (bool, error) {
 }
 
 func (model *HostedModel) WaitUntilAwake(pollIntervalMillis int) error {
-	pollIntervalMillis = int(math.Max(float64(pollIntervalMillis), float64(500)))
+	intervalMillis := time.Duration(math.Max(float64(pollIntervalMillis), float64(500)))
 	for {
 		awake, err := model.IsAwake()
 		if err != nil {
@@ -54,7 +54,7 @@ func (model *HostedModel) WaitUntilAwake(pollIntervalMillis int) error {
 		if awake {
 			return nil
 		}
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(intervalMillis * time.Millisecond)
 	}
 }
 
@@ -104,8 +104,6 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 
 	var output JSONObject
 	if err := json.Unmarshal(responseBody, &output); err != nil {
-		fmt.Println(err)
-
 		return nil, UnexpectedError
 	}
 	return output, nil
