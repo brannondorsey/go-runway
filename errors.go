@@ -17,5 +17,15 @@ type InvalidArgumentError struct {
 }
 
 func (e InvalidArgumentError) Error() string {
-	return fmt.Sprintf("The required argument \"%v\" is invalid.", e.ArgumentName)
+	message := "Invalid argument."
+	if e.ArgumentName != "" {
+		message = fmt.Sprintf("The required argument \"%v\" is invalid.")
+	}
+	return message
+}
+
+func NewInvalidArgumentError(argumentName string) *InvalidArgumentError {
+	return &InvalidArgumentError{
+		ArgumentName: argumentName,
+	}
 }

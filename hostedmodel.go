@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
+	"time"
 )
 
+type JSONObject map[string]interface{}
 type HostedModel struct {
 	url   string
 	token string
@@ -20,46 +23,43 @@ func NewHostedModel(url, token string) (*HostedModel, error) {
 	}, nil
 }
 
-func (model *HostedModel) Info() (interface{}, error) {
-	request, err := http.NewRequest("GET", model.url+"/info", nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := model.requestHostedModel(request)
-	if err != nil {
-		return nil, err
-	}
-	var info interface{}
-	if err := json.Unmarshal(response, &info); err != nil {
-		return nil, UnexpectedError
-	}
-	return &info, nil
+func (model *HostedModel) Info() (JSONObject, error) {
+	return model.requestHostedModel("GET", model.url+"/info", nil)
 }
 
-func (model *HostedModel) Query(input interface{}) (interface{}, error) {
-	jsonInput, err := json.Marshal(input)
-	if err != nil {
-		return InvalidArgumentError{
-			ArgumentName: "input",
-		}, nil
-	}
-	request, err := http.NewRequest("POST", model.url+"/query", bytes.NewReader(jsonInput))
-	if err != nil {
-		return err, nil
-	}
-	response, err := model.requestHostedModel(request)
-	if err != nil {
-		return err, nil
-	}
-	var output interface{}
-	if err := json.Unmarshal(response, &output); err != nil {
-		return UnexpectedError, nil
-	}
-	return output, nil
+func (model *HostedModel) Query(input JSONObject) (JSONObject, error) {
+	return model.requestHostedModel("POST", model.url+"/query", input)
 }
 
-func (model *HostedModel) root() {
+func (model *HostedModel) IsAwake() (bool, error) {
+	var meta JSONObject
+	meta, err := model.root()
+	if err != nil {
+		return false, nil
+	}
+	status, ok := meta["status"]
+	if !ok {
+		return false, UnexpectedError
+	}
+	return status == "running", nil
+}
 
+func (model *HostedModel) WaitUntilAwake(pollIntervalMillis int) error {
+	pollIntervalMillis = int(math.Max(float64(pollIntervalMillis), float64(500)))
+	for {
+		awake, err := model.IsAwake()
+		if err != nil {
+			return err
+		}
+		if awake {
+			return nil
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+func (model *HostedModel) root() (JSONObject, error) {
+	return model.requestHostedModel("GET", model.url, nil)
 }
 
 func (model *HostedModel) addRequestHeaders(req *http.Request) {
@@ -70,19 +70,43 @@ func (model *HostedModel) addRequestHeaders(req *http.Request) {
 	}
 }
 
-func (model *HostedModel) requestHostedModel(req *http.Request) ([]byte, error) {
+func (model *HostedModel) requestHostedModel(method, url string, body JSONObject) (JSONObject, error) {
+
+	var jsonBody []byte
+	var err error
+	if body != nil {
+		jsonBody, err = json.Marshal(body)
+		if err != nil {
+			return nil, *NewInvalidArgumentError("input")
+		}
+	}
+
+	request, err := http.NewRequest(method, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, *NewInvalidArgumentError("")
+	}
+
 	client := http.Client{}
-	model.addRequestHeaders(req)
-	resp, err := client.Do(req)
+	model.addRequestHeaders(request)
+
+	response, err := client.Do(request)
 	if err != nil {
 		fmt.Println("Received an error during request")
 		fmt.Println(err)
 		return nil, NetworkError
 	}
-	defer resp.Body.Close()
-	response, err := ioutil.ReadAll(resp.Body)
+	defer response.Body.Close()
+	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		fmt.Println(err)
 		return nil, UnexpectedError
 	}
-	return response, nil
+
+	var output JSONObject
+	if err := json.Unmarshal(responseBody, &output); err != nil {
+		fmt.Println(err)
+
+		return nil, UnexpectedError
+	}
+	return output, nil
 }
