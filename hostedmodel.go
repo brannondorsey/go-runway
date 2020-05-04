@@ -115,7 +115,7 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 	}
 
 	model.addRequestHeaders(request)
-	response, err := doRequestWithRetry([]int{425, 502}, request)
+	response, err := doRequestWithRetry([]int{429, 502}, request)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,10 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 		} else if response.StatusCode == 500 {
 			return nil, ErrModelError
 		}
-		return nil, ErrUnexpectedError
+		// fmt.Println(response.StatusCode)
+		// responseBody, _ := ioutil.ReadAll(response.Body)
+		// fmt.Println(string(responseBody))
+		return nil, fmt.Errorf("Unexpected HTTP response status code %v: %w", response.StatusCode, ErrUnexpectedError)
 	}
 
 	responseBody, err := ioutil.ReadAll(response.Body)
