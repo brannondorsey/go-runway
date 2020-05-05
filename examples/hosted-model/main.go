@@ -62,7 +62,7 @@ func parseArgs() Args {
 	flag.Parse()
 
 	flag.Usage = func() {
-		fmt.Printf("Usage: %s [OPTIONS] COMMAND [ARGUMENTS] ...\n", os.Args[0])
+		fmt.Printf("Usage: %s [OPTIONS] <info|query> [json-input-file-or-literal] ...\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 
@@ -76,7 +76,7 @@ func parseArgs() Args {
 	}
 
 	if command == "query" && flag.NArg() != 2 {
-		fmt.Println("The query command takes a input single argument. It must be a path to a file or a JSON literal.")
+		fmt.Println("The query command takes a input single argument. It must be a path to a JSON file or a JSON literal.")
 		os.Exit(1)
 	}
 
