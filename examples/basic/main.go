@@ -11,10 +11,10 @@ import (
 func main() {
 
 	// Replace this with the URL of your hosted model (https://learn.runwayml.com/#/how-to/hosted-models)
-	url := "https://lotr.hosted-models.runwayml.cloud/v1"
+	url := "https://example-text-generator.hosted-models.runwayml.cloud/v1"
 
 	// Paste your secret token in here. Leave as empty string if the model is public.
-	token := "9M1i6hDO/74cJrrYb2KCMg=="
+	token := ""
 
 	model, err := runway.NewHostedModel(url, token)
 	if err != nil {

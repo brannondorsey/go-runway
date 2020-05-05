@@ -3,10 +3,14 @@
 A small Go module for interfacing with RunwayML. It currently supports the new [Hosted Models](https://learn.runwayml.com/#/how-to/hosted-models) functionality, modeled after the official [Hosted Models JavaScript SDK](https://github.com/runwayml/hosted-models/).
 
 ```bash
-go get github.com/brannondorsey/go-runway
+go get -u github.com/brannondorsey/go-runway
 ```
 
-## Example
+## Examples
+
+Several examples live in the `examples/` directory.
+
+### Basic
 
 ```go
 package main
@@ -50,7 +54,47 @@ func main() {
 
 ```
 
-More examples live in the `examples/` directory.
+### The `hosted-models` example
+
+The [`hosted-models` example](examples/hosted-models/main.go) is a standalone utility for interfacing with hosted models. You can download it from the [releases page](https://github.com/brannondorsey/go-runway/releases).
+
+```bash
+# Call the /v1/info endpoint of the hosted model
+hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token XXXX info
+# {
+#     "name": "generate_batch",
+#     "description": "Generate text conditioned on prompt",
+#     "inputs": [
+#         {
+#             "default": "",
+#             "description": null,
+#             "minLength": 0,
+#             "name": "prompt",
+#             "type": "text"
+#         },
+#         ...
+#     ],
+#     "outputs": [
+#         {
+#             "default": "",
+#             "description": null,
+#             "minLength": 0,
+#             "name": "generated_text",
+#             "type": "text"
+#         },
+#         ...
+#     ]
+# }
+```
+
+```bash
+hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token XXXX \
+  query '{"prompt": "Four score and seven years ago"}'
+# {
+#     "encountered_end": false,
+#     "generated_text": "Four score and seven years ago the sorcerer Anor stood before the king, as a new wizard of the"
+# }
+```
 
 ## Docs
 
