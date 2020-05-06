@@ -1,6 +1,7 @@
 package runway
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -27,7 +28,22 @@ func doRequestWithRetry(responseCodesToRetry []int, request *http.Request) (*htt
 			return response, nil
 		}
 		response.Body.Close()
+		// Requests that are repeated must be cloned, as their body has already been read
+		request, err = cloneRequest(request)
+		if err != nil {
+			return nil, ErrUnexpectedError
+		}
 	}
+}
+
+func cloneRequest(request *http.Request) (*http.Request, error) {
+	clone := request.Clone(request.Context())
+	clonedBody, err := request.GetBody()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting request body: %w", err)
+	}
+	clone.Body = clonedBody
+	return clone, nil
 }
 
 func intSliceIncludes(haystack []int, needle int) bool {
