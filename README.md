@@ -98,6 +98,8 @@ hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token 
 
 ## Docs
 
+The Go docs for this package live [here on go.dev](https://pkg.go.dev/github.com/brannondorsey/go-runway?tab=doc).
+
 See the [Usage](https://github.com/runwayml/hosted-models/) section of the Hosted Models JavaScript SDK for general information about the methods available for the `HostedModel` object, as they are identical to the ones provided by this package.
 
 ## Dev
