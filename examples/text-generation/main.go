@@ -5,11 +5,11 @@
 // See https://learn.runwayml.com/#/how-to/hosted-models for details.
 //
 // Usage ./build/bin/text-generation
-//   -prompt string
+//   --prompt string
 //     	An optional prompt to use when querying the model. (default "Four score and seven years ago")
-//   -token string
+//   --token string
 //     	The hosted model token. Required if model is private.
-//   -url string
+//   --url string
 //     	A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)
 
 package main
