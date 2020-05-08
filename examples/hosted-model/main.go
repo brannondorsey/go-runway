@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	runway "github.com/brannondorsey/go-runway"
+	flag "github.com/spf13/pflag"
 )
 
 func init() {
@@ -56,8 +56,8 @@ type Args struct {
 
 func parseArgs() Args {
 
-	url := flag.String("url", "", "A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
-	token := flag.String("token", "", "The hosted model token. Required if model is private.")
+	url := flag.StringP("url", "u", "", "A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
+	token := flag.StringP("token", "t", "", "The hosted model token. Required if model is private.")
 
 	flag.Parse()
 
