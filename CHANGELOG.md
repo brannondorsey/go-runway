@@ -5,6 +5,7 @@
 Error handling improvements and updates to `hosted-models` example.
 
 - Rewrite errors and error handling to provide more context. This may introduce backwards incompatible changes.
+- Add `HostedModel.GetURL()` method.
 - Rename `hosted-model` example and binary to `hosted-models`.
 - Print everything but model output to stderr in `hosted-models` example.
 - Replace `ErrInvlaidURL` (misspelled) with `ErrInvalidURL`.
