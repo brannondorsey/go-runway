@@ -60,7 +60,7 @@ The [`hosted-models` example](examples/hosted-models/main.go) is a standalone ut
 
 ```bash
 # Call the /v1/info endpoint of the hosted model
-hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token XXXX info
+hosted-models --url https://my-example-model.hosted-models.runwayml.cloud --token XXXX info
 # {
 #     "name": "generate_batch",
 #     "description": "Generate text conditioned on prompt",
@@ -88,7 +88,7 @@ hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token 
 ```
 
 ```bash
-hosted-models -url https://my-example-model.hosted-models.runwayml.cloud -token XXXX \
+hosted-models --url https://my-example-model.hosted-models.runwayml.cloud --token XXXX \
   query '{"prompt": "Four score and seven years ago"}'
 # {
 #     "encountered_end": false,
