@@ -9,7 +9,7 @@ import (
 var (
 	ErrPermissionDenied = errors.New("Permission denied, this model is private. Did you include the correct token?")
 	ErrNotFound         = errors.New("Model not found. Make sure the url is correct and that the model is \"active\".")
-	ErrInvalidURL       = errors.New("The hosted model url you've provided is invalid. It must be in the format https://my-model.hosted-models.runwayml.cloud/v1.")
+	ErrInvalidURL       = errors.New("The hosted model url you've provided is invalid. It must be in a format like: https://my-model.hosted-models.runwayml.cloud/v1.")
 	ErrModelError       = errors.New("The model experienced an error while processing your input. Double-check that you are sending properly formed input parameters in HostedModel.Query(). You can use the HostedModel.Info() method to check the input parameters the model expects. If the error persists, contact support (https://support.runwayml.com).")
 )
 
