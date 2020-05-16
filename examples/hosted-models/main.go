@@ -22,13 +22,13 @@ func main() {
 
 	model, err := runway.NewHostedModel(args.Url, args.Token)
 	if err != nil {
-		panic(fmt.Errorf("Error creating HostedModel: %s", err))
+		printAndExitIfError(fmt.Errorf("Error creating HostedModel: %s", err))
 	}
 
 	if args.Command == "info" {
 		info, err := model.Info()
 		if err != nil {
-			panic(fmt.Errorf("Error in model.Info(): %s", err))
+			printAndExitIfError(fmt.Errorf("Error in model.Info(): %s", err))
 		}
 		fmt.Fprintln(os.Stdout, jsonObjectToPretty(info))
 		return
@@ -37,11 +37,11 @@ func main() {
 	if args.Command == "query" {
 		input, err := queryArgumentToJSONObject(args.Arguments[1])
 		if err != nil {
-			panic(fmt.Errorf("Error converting query argument to JSONObject: %s", err))
+			printAndExitIfError(fmt.Errorf("Error converting query argument to JSONObject: %s", err))
 		}
 		output, err := model.Query(input)
 		if err != nil {
-			panic(fmt.Errorf("Error in model.Query(): %s", err))
+			printAndExitIfError(fmt.Errorf("Error in model.Query(): %s", err))
 		}
 		fmt.Fprintln(os.Stdout, jsonObjectToPretty(output))
 	}
@@ -116,14 +116,15 @@ func usageAndExit(optionalMessage string) {
 func jsonObjectToPretty(object runway.JSONObject) string {
 	pretty, err := json.MarshalIndent(object, "", "    ")
 	if err != nil {
-		panic(fmt.Errorf("Error in jsonObjectToPretty: %s", err))
+		printAndExitIfError(fmt.Errorf("Error in jsonObjectToPretty(): %s", err))
 	}
 	return string(pretty)
 }
 
-func panicOnError(err error) {
+func printAndExitIfError(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
 	}
 }
 
@@ -132,7 +133,7 @@ func queryArgumentToJSONObject(argument string) (runway.JSONObject, error) {
 	var err error
 	if fileExists(argument) {
 		jsonLiteral, err = getFileContents(argument)
-		panicOnError(err)
+		printAndExitIfError(err)
 	}
 	var object runway.JSONObject
 	err = json.Unmarshal([]byte(jsonLiteral), &object)
