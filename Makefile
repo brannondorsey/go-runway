@@ -5,7 +5,7 @@ default: build
 build:
 	go build -o build/bin/basic examples/basic/main.go
 	go build -o build/bin/text-generation examples/text-generation/main.go
-	go build -o build/bin/hosted-model examples/hosted-model/main.go
+	go build -o build/bin/hosted-models examples/hosted-models/main.go
 
 clean:
 	go clean
@@ -16,10 +16,10 @@ clean:
 install: build
 	cp ./build/bin/basic /usr/local/bin/basic
 	cp ./build/bin/text-generation /usr/local/bin/text-generation
-	cp ./build/bin/hosted-model /usr/local/bin/hosted-model
+	cp ./build/bin/hosted-models /usr/local/bin/hosted-models
 
-NAME := hosted-model
-MAIN_SRC := examples/hosted-model/main.go
+NAME := hosted-models
+MAIN_SRC := examples/hosted-models/main.go
 build-all: clean default
 	mkdir -p build/package/$(NAME)-macos build/package/$(NAME)-windows build/package/$(NAME)-linux-x64 build/package/$(NAME)-linux-arm7 build/package/$(NAME)-linux-arm6
 	GOOS=darwin GOARCH=amd64 go build -o build/package/$(NAME)-macos/$(NAME) $(MAIN_SRC)
