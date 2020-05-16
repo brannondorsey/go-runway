@@ -30,7 +30,7 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("Error in model.Info(): %w", err))
 		}
-		fmt.Println(jsonObjectToPretty(info))
+		fmt.Fprintln(os.Stdout, jsonObjectToPretty(info))
 		return
 	}
 
@@ -43,7 +43,7 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("Error in model.Query(): %w", err))
 		}
-		fmt.Println(jsonObjectToPretty(output))
+		fmt.Fprintln(os.Stdout, jsonObjectToPretty(output))
 	}
 }
 
@@ -61,38 +61,40 @@ func parseArgs() Args {
 	help := flag.BoolP("help", "h", false, "Print this help screen.")
 
 	flag.Usage = func() {
-		fmt.Printf("Usage: %s [OPTIONS] <COMMAND> [ARGUMENTS] ...\n", os.Args[0])
-		fmt.Println()
-		fmt.Println("Options:")
-		fmt.Println()
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] <COMMAND> [ARGUMENTS] ...\n", os.Args[0])
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Options:")
+		fmt.Fprintln(os.Stderr)
 		flag.PrintDefaults()
-		fmt.Println()
-		fmt.Println("Commands:")
-		fmt.Println()
-		fmt.Println("  info: Print the input/output spec of the model as JSON. Equivalent to GET /v1/info on the hosted model URL.")
-		fmt.Println("  query <file-or-json-literal>: Query the model, using a JSON argument as input. The JSON argument can be a file or a JSON string.")
-		fmt.Println()
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Commands:")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "  info: Print the input/output spec of the model as JSON. Equivalent to GET /v1/info on the hosted model URL.")
+		fmt.Fprintln(os.Stderr, "  query <file-or-json-literal>: Query the model, using a JSON argument as input. The JSON argument can be a file or a JSON string.")
+		fmt.Fprintln(os.Stderr)
 	}
 
 	flag.Parse()
 
-	if *help || *url == "" || flag.NArg() < 1 {
-		usageAndExit()
+	if *help || *url == "" {
+		usageAndExit("")
+	}
+
+	if flag.NArg() < 1 {
+		usageAndExit("Error: A command is required.")
 	}
 
 	command := flag.Args()[0]
 	if !(command == "info" || command == "query") {
-		usageAndExit()
+		usageAndExit(fmt.Sprintf("Error: Invalid command \"%s\".", command))
 	}
 
 	if command == "query" && flag.NArg() != 2 {
-		fmt.Println("The query command takes a input single argument. It must be a path to a JSON file or a JSON literal.")
-		os.Exit(1)
+		usageAndExit("Error: The query command takes a input single argument. It must be a path to a JSON file or a JSON literal.")
 	}
 
 	if command == "info" && flag.NArg() != 1 {
-		fmt.Printf("The %s command does not take an argument.\n", command)
-		os.Exit(1)
+		usageAndExit(fmt.Sprintf("Error: The %s command does not take an argument.", command))
 	}
 
 	return Args{
@@ -103,8 +105,11 @@ func parseArgs() Args {
 	}
 }
 
-func usageAndExit() {
+func usageAndExit(optionalMessage string) {
 	flag.Usage()
+	if optionalMessage != "" {
+		fmt.Fprintln(os.Stderr, optionalMessage)
+	}
 	os.Exit(1)
 }
 
