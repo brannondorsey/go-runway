@@ -56,7 +56,7 @@ type Args struct {
 
 func parseArgs() Args {
 
-	url := flag.StringP("url", "u", "", "A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
+	url := flag.StringP("url", "u", "", "A hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
 	token := flag.StringP("token", "t", "", "The hosted model token. Required if model is private.")
 
 	flag.Parse()
