@@ -56,13 +56,14 @@ type Args struct {
 
 func parseArgs() Args {
 
-	url := flag.StringP("url", "u", "", "A hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
+	url := flag.StringP("url", "u", "", "The hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
 	token := flag.StringP("token", "t", "", "The hosted model token. Required if model is private.")
-
-	flag.Parse()
+	help := flag.BoolP("help", "h", false, "Print this help screen.")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [OPTIONS] <COMMAND> [ARGUMENTS] ...\n", os.Args[0])
+		fmt.Println()
+		fmt.Println("Options:")
 		fmt.Println()
 		flag.PrintDefaults()
 		fmt.Println()
@@ -73,7 +74,9 @@ func parseArgs() Args {
 		fmt.Println()
 	}
 
-	if *url == "" || flag.NArg() < 1 {
+	flag.Parse()
+
+	if *help || *url == "" || flag.NArg() < 1 {
 		usageAndExit()
 	}
 
