@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.1
+
+- Fix bug that crashed `hosted-models` example when `query` input was JSON literal on Windows.
+
 ## v0.2.0
 
 Error handling improvements and updates to `hosted-models` example.
