@@ -131,7 +131,9 @@ func printAndExitIfError(err error) {
 func queryArgumentToJSONObject(argument string) (runway.JSONObject, error) {
 	jsonLiteral := argument
 	var err error
-	if fileExists(argument) {
+	// Ignore false negatives that may occur if checking for a file returns an error
+	// as we probably couldn't open it anyway
+	if exists, _ := fileExists(argument); exists {
 		jsonLiteral, err = getFileContents(argument)
 		printAndExitIfError(err)
 	}
@@ -143,12 +145,16 @@ func queryArgumentToJSONObject(argument string) (runway.JSONObject, error) {
 	return object, nil
 }
 
-func fileExists(filename string) bool {
+func fileExists(filename string) (bool, error) {
 	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		} else {
+			return false, err
+		}
 	}
-	return !info.IsDir()
+	return !info.IsDir(), nil
 }
 
 func getFileContents(filename string) (string, error) {
