@@ -1,9 +1,10 @@
-// Package runway is a Go library for interfacing with RunwayML Hosted Models.
+// runway is a Go library for interfacing with RunwayML Hosted Models.
 package runway
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -28,7 +29,7 @@ type HostedModel struct {
 // Use an empty string "" if the model has no token.
 func NewHostedModel(url, token string) (*HostedModel, error) {
 	if !isValidHostedModelsV1URL(url) {
-		return nil, ErrInvlaidURL
+		return nil, ErrInvalidURL
 	}
 	return &HostedModel{
 		url:   url,
@@ -39,7 +40,7 @@ func NewHostedModel(url, token string) (*HostedModel, error) {
 // Info returns a JSONObject containing the input/output spec provided by the model.
 // It makes a GET request to the /v1/info route of a hosted model under the hood.
 func (model *HostedModel) Info() (JSONObject, error) {
-	return model.requestHostedModel("GET", model.url+"/info", nil)
+	return model.requestHostedModel("GET", model.GetURL()+"/info", nil)
 }
 
 // Query runs the model on your input and produce an output. This is how you "run" the model.
@@ -47,7 +48,7 @@ func (model *HostedModel) Info() (JSONObject, error) {
 // Use the HostedModel.Info() method to get the correct format for this JSONobject,
 // as each model expects different inputs.
 func (model *HostedModel) Query(input JSONObject) (JSONObject, error) {
-	return model.requestHostedModel("POST", model.url+"/query", input)
+	return model.requestHostedModel("POST", model.GetURL()+"/query", input)
 }
 
 // IsAwake returns true if this model is awake, and false if it is still waking up.
@@ -61,7 +62,9 @@ func (model *HostedModel) IsAwake() (bool, error) {
 	}
 	status, ok := meta["status"]
 	if !ok {
-		return false, ErrUnexpectedError
+		return false, &ErrUnexpectedError{
+			fmt.Errorf("\"status\" is missing from model root response"),
+		}
 	}
 	return status == "running", nil
 }
@@ -86,8 +89,14 @@ func (model *HostedModel) WaitUntilAwake(pollIntervalMillis int) error {
 	}
 }
 
+// GetURL returns the hosted model's url with trailing slashes removed if they were
+// present during creation
+func (model *HostedModel) GetURL() string {
+	return stripTrailingSlashIfExists(model.url)
+}
+
 func (model *HostedModel) root() (JSONObject, error) {
-	return model.requestHostedModel("GET", model.url, nil)
+	return model.requestHostedModel("GET", model.GetURL(), nil)
 }
 
 func (model *HostedModel) addRequestHeaders(req *http.Request) {
@@ -105,19 +114,31 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 	if body != nil {
 		jsonBody, err = json.Marshal(body)
 		if err != nil {
-			return nil, ErrInvalidArgument
+			return nil, &ErrInvalidArgument{
+				ArgumentName: "body",
+				Details:      "Argument is not valid JSON",
+			}
 		}
 	}
 
 	request, err := http.NewRequest(method, url, bytes.NewReader(jsonBody))
 	if err != nil {
-		return nil, ErrInvalidArgument
+		return nil, &ErrInvalidArgument{
+			Err: err,
+		}
 	}
 
 	model.addRequestHeaders(request)
 	response, err := doRequestWithRetry([]int{429, 502}, request)
 	if err != nil {
-		return nil, err
+		var networkError *ErrNetworkError
+		if errors.As(err, &networkError) {
+			return nil, err
+		} else {
+			return nil, &ErrUnexpectedError{
+				fmt.Errorf("Error doing request with retry: %w", err),
+			}
+		}
 	}
 	defer response.Body.Close()
 
@@ -129,20 +150,23 @@ func (model *HostedModel) requestHostedModel(method, url string, body JSONObject
 		} else if response.StatusCode == 500 {
 			return nil, ErrModelError
 		}
-		// fmt.Println(response.StatusCode)
-		// responseBody, _ := ioutil.ReadAll(response.Body)
-		// fmt.Println(string(responseBody))
-		return nil, fmt.Errorf("Unexpected HTTP response status code %v: %w", response.StatusCode, ErrUnexpectedError)
+		return nil, &ErrUnexpectedError{
+			fmt.Errorf("Unexpected HTTP response status code %v:", response.StatusCode),
+		}
 	}
 
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, ErrUnexpectedError
+		return nil, &ErrUnexpectedError{
+			fmt.Errorf("Unable to read response body: %w", err),
+		}
 	}
 
 	var output JSONObject
 	if err := json.Unmarshal(responseBody, &output); err != nil {
-		return nil, ErrUnexpectedError
+		return nil, &ErrUnexpectedError{
+			fmt.Errorf("Response body is not json: %w", err),
+		}
 	}
 	return output, nil
 }

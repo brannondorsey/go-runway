@@ -22,13 +22,13 @@ func main() {
 
 	model, err := runway.NewHostedModel(args.Url, args.Token)
 	if err != nil {
-		panic(fmt.Errorf("Error creating HostedModel: %w", err))
+		panic(fmt.Errorf("Error creating HostedModel: %s", err))
 	}
 
 	if args.Command == "info" {
 		info, err := model.Info()
 		if err != nil {
-			panic(fmt.Errorf("Error in model.Info(): %w", err))
+			panic(fmt.Errorf("Error in model.Info(): %s", err))
 		}
 		fmt.Fprintln(os.Stdout, jsonObjectToPretty(info))
 		return
@@ -37,11 +37,11 @@ func main() {
 	if args.Command == "query" {
 		input, err := queryArgumentToJSONObject(args.Arguments[1])
 		if err != nil {
-			panic(fmt.Errorf("Error converting query argument to JSONObject: %w", err))
+			panic(fmt.Errorf("Error converting query argument to JSONObject: %s", err))
 		}
 		output, err := model.Query(input)
 		if err != nil {
-			panic(fmt.Errorf("Error in model.Query(): %w", err))
+			panic(fmt.Errorf("Error in model.Query(): %s", err))
 		}
 		fmt.Fprintln(os.Stdout, jsonObjectToPretty(output))
 	}
@@ -116,7 +116,7 @@ func usageAndExit(optionalMessage string) {
 func jsonObjectToPretty(object runway.JSONObject) string {
 	pretty, err := json.MarshalIndent(object, "", "    ")
 	if err != nil {
-		panic(fmt.Errorf("Error in jsonObjectToPretty: %w", err))
+		panic(fmt.Errorf("Error in jsonObjectToPretty: %s", err))
 	}
 	return string(pretty)
 }
@@ -137,7 +137,7 @@ func queryArgumentToJSONObject(argument string) (runway.JSONObject, error) {
 	var object runway.JSONObject
 	err = json.Unmarshal([]byte(jsonLiteral), &object)
 	if err != nil {
-		return nil, fmt.Errorf("Error unmarshaling JSON: %w", err)
+		return nil, fmt.Errorf("Error unmarshaling JSON: %s", err)
 	}
 	return object, nil
 }
@@ -153,12 +153,12 @@ func fileExists(filename string) bool {
 func getFileContents(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return "", fmt.Errorf("Error opening %v: %w", filename, err)
+		return "", fmt.Errorf("Error opening %v: %s", filename, err)
 	}
 	defer file.Close()
 	contents, err := ioutil.ReadAll(file)
 	if err != nil {
-		return "", fmt.Errorf("Error reading contents of %v: %w", filename, err)
+		return "", fmt.Errorf("Error reading contents of %v: %s", filename, err)
 	}
 	return string(contents), nil
 }
