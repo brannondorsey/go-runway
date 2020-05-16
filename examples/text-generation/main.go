@@ -5,24 +5,24 @@
 // See https://learn.runwayml.com/#/how-to/hosted-models for details.
 //
 // Usage ./build/bin/text-generation
-//   -prompt string
+//   --prompt string
 //     	An optional prompt to use when querying the model. (default "Four score and seven years ago")
-//   -token string
+//   --token string
 //     	The hosted model token. Required if model is private.
-//   -url string
+//   --url string
 //     	A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)
 
 package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
 	"time"
 
 	runway "github.com/brannondorsey/go-runway"
+	flag "github.com/spf13/pflag"
 )
 
 func main() {
@@ -84,9 +84,9 @@ type Args struct {
 }
 
 func parseArgs() Args {
-	url := flag.String("url", "", "A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
-	token := flag.String("token", "", "The hosted model token. Required if model is private.")
-	prompt := flag.String("prompt", "Four score and seven years ago", "An optional prompt to use when querying the model.")
+	url := flag.StringP("url", "u", "", "A text-generation (GPT-2) hosted model url (e.g. https://my-text-model.hosted-models.runwayml.cloud/v1)")
+	token := flag.StringP("token", "t", "", "The hosted model token. Required if model is private.")
+	prompt := flag.StringP("prompt", "p", "Four score and seven years ago", "An optional prompt to use when querying the model.")
 	flag.Parse()
 	if *url == "" {
 		flag.Usage()

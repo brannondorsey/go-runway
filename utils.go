@@ -22,7 +22,7 @@ func doRequestWithRetry(responseCodesToRetry []int, request *http.Request) (*htt
 	for {
 		response, err := client.Do(request)
 		if err != nil {
-			return nil, ErrNetworkError
+			return nil, &ErrNetworkError{err}
 		}
 		if !intSliceIncludes(responseCodesToRetry, response.StatusCode) {
 			return response, nil
@@ -31,7 +31,7 @@ func doRequestWithRetry(responseCodesToRetry []int, request *http.Request) (*htt
 		// Requests that are repeated must be cloned, as their body has already been read
 		request, err = cloneRequest(request)
 		if err != nil {
-			return nil, ErrUnexpectedError
+			return nil, err
 		}
 	}
 }
@@ -40,7 +40,7 @@ func cloneRequest(request *http.Request) (*http.Request, error) {
 	clone := request.Clone(request.Context())
 	clonedBody, err := request.GetBody()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting request body: %w", err)
+		return nil, fmt.Errorf("Error getting request body: %s", err)
 	}
 	clone.Body = clonedBody
 	return clone, nil
@@ -53,4 +53,8 @@ func intSliceIncludes(haystack []int, needle int) bool {
 		}
 	}
 	return false
+}
+
+func stripTrailingSlashIfExists(input string) string {
+	return strings.TrimRight(input, "/")
 }
