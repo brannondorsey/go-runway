@@ -25,28 +25,6 @@ func main() {
 		panic(fmt.Errorf("Error creating HostedModel: %w", err))
 	}
 
-	if args.Command == "isawake" {
-		awake, err := model.IsAwake()
-		if err != nil {
-			panic(fmt.Errorf("Error in model.IsAwake(): %w", err))
-		}
-		fmt.Println(awake)
-		if awake {
-			os.Exit(0)
-		} else {
-			os.Exit(100)
-		}
-	}
-
-	if args.Command == "waituntilawake" {
-		pollInterval := 1000
-		err := model.WaitUntilAwake(pollInterval)
-		if err != nil {
-			panic(fmt.Errorf("Error in model.WaitUntilAwake(): %w", err))
-		}
-		os.Exit(0)
-	}
-
 	if args.Command == "info" {
 		info, err := model.Info()
 		if err != nil {
@@ -92,8 +70,6 @@ func parseArgs() Args {
 		fmt.Println()
 		fmt.Println("  info: Print the input/output spec of the model as JSON. Equivalent to GET /v1/info on the hosted model URL.")
 		fmt.Println("  query <file-or-json-literal>: Query the model, using a JSON argument as input. The JSON argument can be a file or a JSON string.")
-		fmt.Println("  isawake: Returns \"true\" and exit code 0 if the model is awake, or \"false\" and exit code 100 if not.")
-		fmt.Println("  waituntilawake: Exits once the model is awake.")
 		fmt.Println()
 	}
 
@@ -102,10 +78,7 @@ func parseArgs() Args {
 	}
 
 	command := flag.Args()[0]
-	if !(command == "info" ||
-		command == "query" ||
-		command == "isawake" ||
-		command == "waituntilawake") {
+	if !(command == "info" || command == "query") {
 		usageAndExit()
 	}
 
@@ -114,7 +87,7 @@ func parseArgs() Args {
 		os.Exit(1)
 	}
 
-	if (command == "info" || command == "isawake" || command == "waituntilawake") && flag.NArg() != 1 {
+	if command == "info" && flag.NArg() != 1 {
 		fmt.Printf("The %s command does not take an argument.\n", command)
 		os.Exit(1)
 	}
